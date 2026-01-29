@@ -1,13 +1,12 @@
 """PlaybackEvent model for analytics service."""
-from sqlalchemy import Column, Integer, DateTime, ForeignKey, Index
+from sqlalchemy import Column, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
-from cloudsound_shared.models.base import Base, UUIDMixin, TimestampMixin
-from cloudsound_shared.multitenancy import TenantMixin
+from cloudsound_shared.models.base import Base, UUIDMixin
 
 
-class PlaybackEvent(Base, UUIDMixin, TimestampMixin, TenantMixin):
-    """PlaybackEvent model for tracking radio playback statistics with tenant isolation."""
+class PlaybackEvent(Base, UUIDMixin):
+    """PlaybackEvent model for tracking radio playback statistics."""
     
     __tablename__ = "playback_events"
     
@@ -16,16 +15,10 @@ class PlaybackEvent(Base, UUIDMixin, TimestampMixin, TenantMixin):
     timestamp = Column(DateTime(timezone=True), nullable=False, index=True)
     duration_seconds = Column(Integer, nullable=True)  # How long the track was played (null if still playing)
     
-    # Composite index for tenant analytics queries
-    __table_args__ = (
-        Index('ix_playback_events_tenant_timestamp', 'tenant_id', 'timestamp'),
-        Index('ix_playback_events_tenant_station', 'tenant_id', 'station_id'),
-    )
-    
     # Relationships
     station = relationship("RadioStation", back_populates="playback_events")
     track = relationship("Track", back_populates="playback_events")
     
     def __repr__(self) -> str:
-        return f"<PlaybackEvent(id={self.id}, station_id={self.station_id}, track_id={self.track_id}, tenant_id={self.tenant_id})>"
+        return f"<PlaybackEvent(id={self.id}, station_id={self.station_id}, track_id={self.track_id}, timestamp={self.timestamp})>"
 
